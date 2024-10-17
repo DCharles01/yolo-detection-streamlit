@@ -1,0 +1,5 @@
+images/
+object_detections/
+flask_streamlit_cloudformation.yaml
+venv/
+.DS_Store

@@ -1,0 +1,6 @@
+numpy
+matplotlib
+# opencv-python, avoid import error for libGL
+opencv-python-headless
+pillow
+flask

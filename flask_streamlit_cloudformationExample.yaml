@@ -1,0 +1,141 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template for EC2 instance with security groups, key pair, S3 bucket, and budget
+
+Parameters:
+  KeyName:
+    Type: String
+    Description: Name of the EC2 key pair
+  InstanceType:
+    Type: String
+    Default: t2.micro
+    Description: EC2 instance type
+  AWSRegion:
+    Type: String
+    Default: us-east-1
+    Description: AWS region for the resources
+  AlertEmail:
+    Type: String
+    Description: Email address for budget notifications
+
+  AlertEmails:
+    Type: CommaDelimitedList
+    Description: Comma-separated list of email addresses for budget alerts
+
+Resources:
+  # Security Group for EC2
+  StreamlitFlaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group to allow inbound SCP, Flask ML API, and Streamlit
+      SecurityGroupIngress:
+        - Description: Inbound SCP
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - Description: Inbound Flask API
+          IpProtocol: tcp
+          FromPort: 5000
+          ToPort: 5000
+          CidrIp: 0.0.0.0/0
+        - Description: Inbound Streamlit application
+          IpProtocol: tcp
+          FromPort: 8501
+          ToPort: 8501
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: 0
+          ToPort: 0
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: streamlit_flask_security_group
+
+  # EC2 Key Pair
+  GeneratedKeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: !Ref KeyName
+
+  # S3 Bucket for PEM key
+  EC2PemKeyBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ec2-pem-key-yolo-detection
+
+  # S3 Object for PEM key
+  PemKeyS3Object:
+    Type: AWS::S3::Object
+    Properties:
+      Bucket: !Ref EC2PemKeyBucket
+      Key: !Sub "${KeyName}.pem"
+      Source: !Sub "${KeyName}.pem"
+
+  # Find Ubuntu AMI
+  UbuntuAMI:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-2023.*-x86_64
+
+  # EC2 Instance
+  StreamlitFlaskInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref GeneratedKeyPair
+      ImageId: !Ref UbuntuAMI
+      SecurityGroupIds:
+        - !Ref StreamlitFlaskSecurityGroup
+      AssociatePublicIpAddress: true
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo yum update -y 
+          sudo yum install docker -y
+          sudo systemctl start docker
+          sudo yum install curl -y
+          sudo curl -SL https://github.com/docker/compose/releases/download/v2.29.6/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          sudo yum install git -y
+          sudo yum install make -y
+          sudo usermod -aG docker $USER
+          newgrp docker
+
+      Tags:
+        - Key: Name
+          Value: streamlit_flask_ec2
+
+  
+  EC2Budget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName: budget-ec2-monthly
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: 5
+          Unit: USD
+        TimePeriod:
+          Start: 2024-02-11T00:00:00Z
+          End: 2087-06-15T00:00:00Z
+        NotificationsWithSubscribers:
+          - Notification:
+              NotificationType: FORECASTED
+              ComparisonOperator: GREATER_THAN
+              Threshold: 100
+              ThresholdType: PERCENTAGE
+            Subscribers:
+              - SubscriptionType: EMAIL
+                Address: "david.ja.charles@gmail.com"
+
+Outputs:
+  InstanceId:
+    Description: Instance ID of the EC2
+    Value: !Ref StreamlitFlaskInstance
+  SecurityGroupId:
+    Description: Security Group ID
+    Value: !Ref StreamlitFlaskSecurityGroup
+  S3BucketName:
+    Description: S3 bucket for PEM key
+    Value: !Ref EC2PemKeyBucket
