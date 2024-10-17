@@ -13,8 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
 
-# Expose port 5000 for Flask API
-EXPOSE 5000
+# Expose port 80 for Flask API
+EXPOSE 80
 
 # Command to run the Flask app
 CMD ["python", "app.py"]
