@@ -46,8 +46,8 @@ Make sure you have the following installed:
 1. Clone the repository:
 
    ```bash
-   git clone <repository_url>
-   cd <repository_name>
+   git clone https://github.com/DCharles01/yolo-detection-streamlit
+   cd yolo-detection-streamlit
    ```
 
 2. Create a virtual environment:
