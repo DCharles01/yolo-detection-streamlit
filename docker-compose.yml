@@ -22,8 +22,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8501:8501"
-    depends_on:
-      - yolo-api # wait for flask api to start
+    # depends_on:
+    #   - yolo-api # wait for flask api to start
     networks:
       - app-network
 

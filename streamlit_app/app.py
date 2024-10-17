@@ -27,7 +27,7 @@ if uploaded_file is not None:
     # Call the Flask API when user clicks the "Detect Objects" button
     if st.button("Detect Objects"):
         # Define the API endpoint
-        api_url = "http://0.0.0.0:80/detect"
+        api_url = "http://yolo-api:80/detect"
         
         # Make a POST request to Flask API, including threshold values
         files = {'image': ('image.jpg', img_bytes, 'image/jpeg')}
