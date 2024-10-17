@@ -1,1 +1,1 @@
-yolov3.weights filter=lfs diff=lfs merge=lfs -text
+yolo_api/yolov3.weights filter=lfs diff=lfs merge=lfs -text
