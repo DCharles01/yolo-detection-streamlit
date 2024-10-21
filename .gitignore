@@ -4,5 +4,9 @@ flask_streamlit_cloudformation.yaml
 venv/
 .DS_Store
 *.pem
+<<<<<<< HEAD
 .vscode/
 yolo_api/yolov32.weights
+=======
+.vscode/
+>>>>>>> ae8555c6a7174734969cdeefaeaed23c8dbeb02c
