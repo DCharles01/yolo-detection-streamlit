@@ -8,7 +8,7 @@ services:
       context: ./yolo_api
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "5000:5000"
     environment:
       - FLASK_ENV=production
     networks:
@@ -22,11 +22,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8501:8501"
-    # depends_on:
-    #   - yolo-api # wait for flask api to start
+    depends_on:
+      - yolo-api # wait for flask api to start
     networks:
       - app-network
 
 networks:
   app-network:
-    driver: bridge

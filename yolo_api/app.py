@@ -7,9 +7,9 @@ from PIL import Image
 app = Flask(__name__)
 
 # Load YOLO model and classes
-yolo_config = 'yolov3.cfg'
-yolo_weights = 'yolov3.weights'
-yolo_classes = 'yolov3.txt'
+yolo_config = 'yolov32.cfg'
+yolo_weights = 'yolov32.weights'
+yolo_classes = 'coco.names'
 
 net = cv2.dnn.readNet(yolo_weights, yolo_config)
 
@@ -19,9 +19,21 @@ with open(yolo_classes, 'r') as f:
 COLORS = np.random.uniform(0, 255, size=(len(classes), 3))
 
 # Function to get the output layer names
+# def get_output_layers(net):
+#     layer_names = net.getLayerNames()
+#     return [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
+
 def get_output_layers(net):
+    # Get the names of all layers in the network
     layer_names = net.getLayerNames()
-    return [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
+    
+    # Fix: Ensure the output of getUnconnectedOutLayers is flattened to work with layer names
+    unconnected_out_layers = net.getUnconnectedOutLayers()
+
+    # If the result is an array of arrays, flatten it and subtract 1 for correct indexing
+    unconnected_out_layers = [i[0] if isinstance(i, np.ndarray) else i for i in unconnected_out_layers]
+
+    return [layer_names[i - 1] for i in unconnected_out_layers]
 
 # Function to draw bounding box
 def draw_bounding_box(img, class_id, confidence, x, y, x_plus_w, y_plus_h):
@@ -91,4 +103,4 @@ def detect_objects():
     return send_file(io.BytesIO(img_encoded.tobytes()), mimetype='image/jpeg')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=5000)
