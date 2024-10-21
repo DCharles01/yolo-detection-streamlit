@@ -5,3 +5,4 @@ venv/
 .DS_Store
 *.pem
 .vscode/
+yolo_api/yolov32.weights

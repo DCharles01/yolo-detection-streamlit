@@ -103,4 +103,4 @@ def detect_objects():
     return send_file(io.BytesIO(img_encoded.tobytes()), mimetype='image/jpeg')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=80)
