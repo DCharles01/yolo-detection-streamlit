@@ -1,0 +1,41 @@
+name: Build and Deploy Flask API
+
+on:
+  push:
+    branches:
+      - main  # Trigger this workflow when changes are pushed to the 'main' branch.
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest  # This runner has Docker pre-installed
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1  # Optional for multi-platform builds
+
+    - name: Login to Amazon ECR
+      run: |
+        aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Build Docker image
+      run: docker build -t flask-api .
+
+    - name: Tag Docker image
+      run: docker tag flask-api:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/flask-api:latest
+
+    - name: Push Docker image to ECR
+      run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/flask-api:latest
+
+    - name: Deploy to EKS
+      run: |
+        aws eks --region us-east-2 update-kubeconfig --name my-eks-cluster
+        kubectl apply -f k8s/deployment.yaml
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
