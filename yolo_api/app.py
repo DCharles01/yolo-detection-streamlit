@@ -7,8 +7,8 @@ from PIL import Image
 app = Flask(__name__)
 
 # Load YOLO model and classes
-yolo_config = 'yolov32.cfg'
-yolo_weights = 'yolov32.weights'
+yolo_config = 'yolov3.cfg'
+yolo_weights = 'yolov3.weights'
 yolo_classes = 'coco.names'
 
 net = cv2.dnn.readNet(yolo_weights, yolo_config)
