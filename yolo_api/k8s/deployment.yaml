@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yolo-api-deployment
+  labels:
+    app: yolo-api
+spec:
+  replicas: 2  # Number of replicas (pods) to run
+  selector:
+    matchLabels:
+      app: yolo-api
+  template:
+    metadata:
+      labels:
+        app: yolo-api
+    spec:
+      containers:
+      - name: yolo-api-container
+        image: 913871725780.dkr.ecr.us-east-2.amazonaws.com/yolo-api:1.0.0  # Replace with the correct image version if needed
+        ports:
+        - containerPort: 80
+        # resources:
+        #   limits:
+        #     memory: "512Mi"
+        #     cpu: "500m"
+        #   requests:
+        #     memory: "256Mi"
+        #     cpu: "250m"
+        # env:
+        # - name: FLASK_ENV
+        #   value: "production"  # Environment variable for Flask
+        # - name: YOLO_CONFIG_PATH
+        #   value: "/app/config/yolo_config.json"  # Add any required environment variables for your YOLO API
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yolo-api-service
+spec:
+  type: LoadBalancer  # Expose the service externally via a load balancer
+  selector:
+    app: yolo-api
+  ports:
+  - protocol: TCP
+    port: 80  # External port
+    targetPort: 80  # The container's port that the service routes traffic to
